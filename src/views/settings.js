@@ -1,0 +1,1 @@
+export function renderSettings(root) { root.innerHTML = '<h1>Settings</h1>'; }

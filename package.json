@@ -1,0 +1,29 @@
+{
+  "name": "nsw-naplan-prep",
+  "version": "1.0.0",
+  "description": "NSW Year 3 NAPLAN Preparation App - Static, Frameworkless",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev-server.js",
+    "build": "cp -r src public && cp src/index.html public/index.html",
+    "test": "node --test",
+    "test:watch": "node --test --watch src/**/*.test.js",
+    "test:e2e": "playwright test",
+    "lint": "echo 'Linting would run here'"
+  },
+  "keywords": [
+    "naplan",
+    "education",
+    "year-3",
+    "preparation",
+    "nsw"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.58.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
