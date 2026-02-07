@@ -235,6 +235,7 @@ button {
   color: #1f2937;
   margin: 16px 0;
   line-height: 1.4;
+  white-space: pre-line;
 }
 
 .quiz-top {
