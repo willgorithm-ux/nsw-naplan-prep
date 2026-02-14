@@ -1,6 +1,7 @@
 import { navigate } from "../main.js";
 import { getQuestionBank } from "../curriculum.js";
 import { getStorage } from "../storage.js";
+import { playCorrectSound, playWrongSound, playGemSound, playTickSound, playLevelUpSound, initSound } from "../sound.js";
 
 /* -----------------------
    Deterministic shuffle helpers (Patch A)
@@ -46,6 +47,9 @@ function isoDayStamp(date = new Date()) {
 export async function renderQuiz(root, params) {
   const storage = getStorage();
   const progress = await storage.getProgress();
+  
+  // Initialize sound settings
+  await initSound();
 
   let selectedAnswer = null;
   let attempt = 0;
@@ -195,6 +199,8 @@ export async function renderQuiz(root, params) {
       if (isCorrect) {
         correctCount += 1;
         gemCount += 25;
+        playCorrectSound();
+        playGemSound();
         await persistSession();
         showFinalFeedback(q, true);
         return;
@@ -209,6 +215,7 @@ export async function renderQuiz(root, params) {
       }
 
       gemCount += 5;
+      playWrongSound();
       await persistSession();
       showFinalFeedback(q, false);
     });
@@ -286,6 +293,7 @@ export async function renderQuiz(root, params) {
 
       autoAdvanceTimer = setInterval(() => {
         secondsLeft -= 1;
+        playTickSound();
         if (countdownEl) countdownEl.textContent = String(secondsLeft);
         if (secondsLeft <= 0) advanceToNext();
       }, 1000);
