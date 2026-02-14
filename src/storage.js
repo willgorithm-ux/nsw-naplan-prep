@@ -40,8 +40,17 @@ class StorageInterface {
       theme: 'space',
       colors: { primary: '#6366F1', secondary: '#EC4899', accent: '#10B981' },
       avatar: 'astronaut-1',
-      soundOn: true
+      soundOn: true,
+      childName: 'Student',
+      defaultMissionSize: 10,
+      autoAdvanceSpeed: 5
     };
+  }
+
+  async resetProgress() {
+    localStorage.removeItem('naplan:progress');
+    localStorage.removeItem('naplan:session');
+    return this._defaultProgress();
   }
 
   _defaultProgress() {
