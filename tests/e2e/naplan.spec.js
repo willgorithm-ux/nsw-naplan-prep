@@ -18,7 +18,7 @@ test.describe('NAPLAN Prep App - Comprehensive E2E Suite', () => {
     await page.click('button:has-text("Let\'s Go")');
     await expect(page.locator('h1')).toContainText('Pick a Theme');
     await page.click('button:has-text("Space")');
-    await expect(page.locator('h1')).toContainText('Mission Control');
+    await expect(page.locator('h1')).toContainText('Hey');
   }
 
   async function startMission(page, module, size) {
@@ -60,7 +60,7 @@ test.describe('NAPLAN Prep App - Comprehensive E2E Suite', () => {
     // Dashboard should show personalized greeting
     await expect(page.locator('h1')).toContainText('Hey Georgia!');
     await expect(page.locator('.buddy-intro')).toContainText('Ziggy');
-    await expect(page.locator('button')).toContainText('Start a Mission');
+    await expect(page.locator('#startBtn')).toContainText('Start a Mission');
   });
 
   test('2. Module Select displays all 4 categories with levels', async ({ page }) => {
@@ -219,27 +219,27 @@ test.describe('NAPLAN Prep App - Comprehensive E2E Suite', () => {
   });
 
   test('9. All 4 categories work: Numeracy, Reading, Grammar, Writing', async ({ page }) => {
-    test.setTimeout(60000);
+    test.setTimeout(90000);
     
-    await onboardToDashboard(page, 'AllCatsUser');
-    
-    const modules = [
-      { name: 'Numeracy', button: '🔢 Numeracy' },
-      { name: 'Reading', button: '📖 Reading' },
-      { name: 'Grammar', button: '✍️ Grammar' },
-      { name: 'Writing', button: '📝 Writing' }
-    ];
-    
-    for (const mod of modules) {
-      await page.click('button:has-text("Start a Mission")');
-      await page.click(`button:has-text("${mod.button}")`);
+    // Test each module separately
+    for (const mod of ['Numeracy', 'Reading', 'Grammar', 'Writing']) {
+      // Start fresh for each module
+      if (mod !== 'Numeracy') {
+        await page.goto('/');
+        await page.evaluate(() => localStorage.clear());
+        await page.goto('/');
+      }
+      
+      await onboardToDashboard(page, mod + 'User');
+      await page.click('#startBtn');
+      await page.click(`button:has-text("${mod}")`);
       await page.click('button:has-text("Quick (10")');
       
       // Quiz should load with questions
       await expect(page.locator('h2')).toBeVisible();
       await expect(page.locator('.options .option-btn')).toHaveCount(4);
       
-      // Go back
+      // Quit back to module-select
       await page.click('#quitBtn');
     }
   });
@@ -263,14 +263,33 @@ test.describe('NAPLAN Prep App - Comprehensive E2E Suite', () => {
     
     await onboardToDashboard(page, 'GemUser');
     
-    // First mission
+    // First mission - complete it to earn gems
     await startMission(page, 'Numeracy', 'Quick (10');
-    await answerQuestion(page);
-    await page.click('#nextBtn');
-    await answerQuestion(page);
-    await page.click('#quitBtn');
     
-    // Gems should be > 0
+    // Answer all 10 questions correctly (each gives 25 gems)
+    for (let i = 0; i < 10; i++) {
+      await page.click('.options .option-btn:nth-child(1)');
+      await page.click('#submitBtn');
+      
+      // If wrong, try again
+      const retry = page.locator('.feedback-card.incorrect:has-text("one more")');
+      if (await retry.count()) {
+        await page.click('.options .option-btn:nth-child(2)');
+        await page.click('#submitBtn');
+      }
+      
+      // Wait for next button and click it
+      await expect(page.locator('#nextBtn')).toBeVisible({ timeout: 10000 });
+      await page.click('#nextBtn');
+    }
+    
+    // Should be at results now
+    await expect(page.locator('h1')).toContainText('Mission Complete');
+    
+    // Go to dashboard
+    await page.click('#startBtn');
+    
+    // Gems should be > 0 (10 correct answers * 25 gems = 250)
     const gemsText = await page.locator('.gem-count').innerText();
     const gems = parseInt(gemsText);
     expect(gems).toBeGreaterThan(0);

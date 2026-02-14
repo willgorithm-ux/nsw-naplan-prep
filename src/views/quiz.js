@@ -2,6 +2,47 @@ import { navigate } from "../main.js";
 import { getQuestionBank } from "../curriculum.js";
 import { getStorage } from "../storage.js";
 
+/* -----------------------
+   Deterministic shuffle helpers (Patch A)
+   ----------------------- */
+function seedFromString(str) {
+  // Deterministic hash -> uint32
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function shuffleWithRng(rng, arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function isoDayStamp(date = new Date()) {
+  // YYYY-MM-DD (local time)
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 export async function renderQuiz(root, params) {
   const storage = getStorage();
   const progress = await storage.getProgress();
@@ -30,14 +71,24 @@ export async function renderQuiz(root, params) {
     (q) => q.domain === module && q.type === "mcq" && q.difficulty === level
   );
   const fallbackPool = bank.filter((q) => q.domain === module && q.type === "mcq");
-
   const pool = byExactLevel.length >= missionSize ? byExactLevel : fallbackPool;
 
   // Stable lookup by ID
   const byId = new Map(pool.map((q) => [q.id, q]));
 
-  // Choose mission question IDs
-  const questionIds = session?.questionIds ?? Array.from(byId.keys()).slice(0, missionSize);
+  // Choose mission question IDs (Patch B: deterministic shuffle instead of first N)
+  const questionIds =
+    session?.questionIds ??
+    (() => {
+      const ids = Array.from(byId.keys());
+
+      // Stable per module+level+missionSize per day
+      const seedKey = `${module}|L${level}|N${missionSize}|${isoDayStamp()}`;
+      const rng = mulberry32(seedFromString(seedKey));
+
+      const shuffled = shuffleWithRng(rng, ids);
+      return shuffled.slice(0, missionSize);
+    })();
 
   // Resolve IDs using the map
   const questions = questionIds.map((id) => byId.get(id)).filter(Boolean);
@@ -85,32 +136,39 @@ export async function renderQuiz(root, params) {
     attempt = 0;
 
     root.innerHTML = `
-      <div class="view view-quiz">
-        <div class="quiz-top">
-          <div class="stats">
-            <div><strong>Module:</strong> ${escapeHtml(module)}</div>
-            <div><strong>Level:</strong> ${level}</div>
-            <div><strong>Question:</strong> ${qIndex + 1} / ${questions.length}</div>
-            <div><strong>Gems:</strong> ${gemCount}</div>
-          </div>
-          <button class="btn-secondary" id="quitBtn">Quit to Menu</button>
-        </div>
+<div class="view view-quiz">
+  <div class="quiz-top">
+    <div class="stats">
+      <div><strong>Module:</strong> ${escapeHtml(module)}</div>
+      <div><strong>Level:</strong> ${level}</div>
+      <div><strong>Question:</strong> ${qIndex + 1} / ${questions.length}</div>
+      <div><strong>Gems:</strong> ${gemCount}</div>
+    </div>
+    <div>
+      <button class="btn-secondary" id="quitBtn">Quit to Menu</button>
+    </div>
+  </div>
 
-        <h2>${escapeHtml(q.prompt)}</h2>
+  <h2>${escapeHtml(q.prompt)}</h2>
 
-        <div class="options" role="group" aria-label="Answer choices">
-          ${q.choices.map((c) => `<button class="option-btn" data-choice="${escapeHtml(c)}">${escapeHtml(c)}</button>`).join("")}
-        </div>
+  <div class="options" role="group" aria-label="Answer choices">
+    ${q.choices
+      .map(
+        (c) =>
+          `<button class="option-btn" data-choice="${escapeHtml(c)}">${escapeHtml(c)}</button>`
+      )
+      .join("")}
+  </div>
 
-        <div class="actions">
-          <button class="btn-secondary" id="hintBtn">Hint</button>
-          <button class="btn-primary" id="submitBtn" disabled>Submit</button>
-        </div>
+  <div class="actions">
+    <button class="btn-secondary" id="hintBtn">Hint</button>
+    <button class="btn-primary" id="submitBtn" disabled>Submit</button>
+  </div>
 
-        <div id="hintArea" class="hint-area" style="display:none;"></div>
-        <div id="feedbackArea" class="feedback-area" style="display:none;"></div>
-      </div>
-    `;
+  <div id="hintArea" class="hint-area" style="display:none"></div>
+  <div id="feedbackArea" class="feedback-area" style="display:none"></div>
+</div>
+`;
 
     root.querySelector("#quitBtn").addEventListener("click", async () => {
       clearAutoAdvanceTimer();
@@ -159,11 +217,11 @@ export async function renderQuiz(root, params) {
   function showHint(q) {
     const hintArea = root.querySelector("#hintArea");
     hintArea.style.display = "block";
-    hintArea.innerHTML = `<strong>Hint:</strong> ${escapeHtml(q.hint || "Try again!")}`;
-    
-    // Smooth scroll to hint
+    hintArea.innerHTML = `<strong>Hint:</strong> ${escapeHtml(
+      q.hint || "Try thinking it through carefully."
+    )}`;
     setTimeout(() => {
-      hintArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      hintArea.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }, 100);
   }
 
@@ -171,15 +229,13 @@ export async function renderQuiz(root, params) {
     const feedbackArea = root.querySelector("#feedbackArea");
     feedbackArea.style.display = "block";
     feedbackArea.innerHTML = `
-      <div class="feedback-card incorrect">
-        <h3>Nice try — have one more go 😊</h3>
-        <p>Check the hint, then pick an answer and press <strong>Submit</strong> again.</p>
-      </div>
-    `;
-    
-    // Smooth scroll to feedback
+<div class="feedback-card incorrect">
+  <h3>Nice try — have one more go</h3>
+  <p>Check the hint, then pick an answer and press <strong>Submit</strong> again.</p>
+</div>
+`;
     setTimeout(() => {
-      feedbackArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      feedbackArea.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 100);
   }
 
@@ -199,16 +255,20 @@ export async function renderQuiz(root, params) {
     root.querySelectorAll(".option-btn").forEach((b) => (b.disabled = true));
     root.querySelector("#submitBtn").disabled = true;
 
-    const nextLabel = isCorrect ? "Next →" : `Next → (Answer: ${escapeHtml(q.correctAnswer)})`;
+    const nextLabel = isCorrect ? "Next" : `Next (Answer: ${escapeHtml(q.correctAnswer)})`;
 
     feedbackArea.innerHTML = `
-      <div class="feedback-card ${isCorrect ? "correct" : "incorrect"}">
-        <h3>${isCorrect ? "Correct! 🌟" : "Good effort — let's learn it 😊"}</h3>
-        <p><strong>Explanation:</strong> ${escapeHtml(q.explanation || "Let's review and try another.")}</p>
-        <button class="btn-primary" id="nextBtn">${nextLabel}</button>
-        ${isCorrect ? '<p id="autoAdvanceText" style="margin-top:12px; font-size:14px; color:#64748b;">Auto-next in <span id="countdown">5</span>s</p>' : ''}
-      </div>
-    `;
+<div class="feedback-card ${isCorrect ? "correct" : "incorrect"}">
+  <h3>${isCorrect ? "Correct!" : "Good effort — let’s learn it"}</h3>
+  <p><strong>Explanation:</strong> ${escapeHtml(q.explanation || "Let's review and try another.")}</p>
+  <button class="btn-primary" id="nextBtn">${nextLabel}</button>
+  ${
+    isCorrect
+      ? `<p id="autoAdvanceText" style="margin-top:12px;font-size:14px;color:#64748b">Auto-next in <span id="countdown">5</span>s</p>`
+      : ""
+  }
+</div>
+`;
 
     const advanceToNext = async () => {
       clearAutoAdvanceTimer();
@@ -226,20 +286,14 @@ export async function renderQuiz(root, params) {
 
       autoAdvanceTimer = setInterval(() => {
         secondsLeft -= 1;
-        if (countdownEl) countdownEl.textContent = secondsLeft;
-
-        if (secondsLeft <= 0) {
-          advanceToNext();
-        }
+        if (countdownEl) countdownEl.textContent = String(secondsLeft);
+        if (secondsLeft <= 0) advanceToNext();
       }, 1000);
     }
 
-    // Smooth scroll to Next button
     setTimeout(() => {
       const nextBtn = root.querySelector("#nextBtn");
-      if (nextBtn) {
-        nextBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+      if (nextBtn) nextBtn.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 100);
   }
 
@@ -252,6 +306,7 @@ export async function renderQuiz(root, params) {
       .replaceAll("'", "&#039;");
   }
 
+  // Persist at start so resume always works even if they quit immediately
   await persistSession();
   renderQuestion();
 }
