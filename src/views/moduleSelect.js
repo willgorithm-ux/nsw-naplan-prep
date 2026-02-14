@@ -8,6 +8,7 @@ export async function renderModuleSelect(root) {
 
   root.innerHTML = `
     <div class="view view-module">
+      <button class="btn-secondary" id="backBtn" style="margin-bottom: 16px;">← Back to Home</button>
       <h1>🎯 Pick Your Mission!</h1>
       <p style="margin-bottom: 24px; font-size: 16px; color: #64748b;">
         Choose what you want to practice with Ziggy today!
@@ -21,6 +22,8 @@ export async function renderModuleSelect(root) {
       <button id="writeBtn">📝 Writing <span style="font-size:14px; color:#64748b;">(Level ${progress?.levels?.writing ?? 1})</span></button>
     </div>
   `;
+
+  root.querySelector('#backBtn').addEventListener('click', () => navigate('dashboard'));
 
   if (session) {
     root.querySelector('#resumeBtn').addEventListener('click', () => {
