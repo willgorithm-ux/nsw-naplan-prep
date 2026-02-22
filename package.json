@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node scripts/dev-server.js",
-    "build": "cp -r src public && cp src/index.html public/index.html",
+    "build": "node scripts/generate-icons.js && rm -rf public && mkdir public && cp -r src/* public/",
     "test": "node --test",
     "test:watch": "node --test --watch src/**/*.test.js",
     "test:e2e": "playwright test",
