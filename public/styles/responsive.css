@@ -1,0 +1,419 @@
+/* ============================================
+   NAPLAN Prep - Mobile Responsive Styles
+   Optimized for Android and iOS devices
+   ============================================ */
+
+/* ============================================
+   Base Mobile Adjustments
+   ============================================ */
+
+@media (max-width: 600px) {
+  /* Reduce padding on mobile */
+  body {
+    padding: 12px;
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile */
+  }
+
+  #app-root {
+    max-width: 100%;
+  }
+
+  /* Smaller view padding */
+  .view {
+    padding: 20px 16px;
+    border-radius: 20px;
+  }
+}
+
+/* ============================================
+   Touch-Friendly Interactive Elements
+   ============================================ */
+
+/* Minimum touch target size (48x48px per WCAG) */
+button,
+.btn-primary,
+.btn-secondary,
+.option-btn,
+.view-module button {
+  min-height: 48px;
+  min-width: 48px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Larger buttons for primary actions */
+.btn-start-mission {
+  min-height: 56px;
+  padding: 18px 32px;
+}
+
+/* Better button spacing on touch devices */
+button,
+.btn-primary,
+.btn-secondary {
+  margin: 6px 4px;
+  padding: 14px 24px;
+}
+
+/* Option buttons - larger touch area */
+.options {
+  gap: 12px;
+}
+
+.option-btn {
+  padding: 16px 20px;
+  font-size: 17px;
+  min-height: 56px;
+}
+
+/* ============================================
+   Mobile Typography
+   ============================================ */
+
+@media (max-width: 600px) {
+  h1 {
+    font-size: 26px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  p {
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .welcome-text h1 {
+    font-size: 22px;
+  }
+
+  .buddy-intro {
+    font-size: 16px;
+  }
+
+  .tagline {
+    font-size: 14px;
+  }
+}
+
+/* ============================================
+   Mobile Dashboard
+   ============================================ */
+
+@media (max-width: 600px) {
+  .view-dashboard {
+    padding: 24px 16px;
+  }
+
+  .mascot {
+    font-size: 60px;
+  }
+
+  .gems-display {
+    padding: 12px 20px;
+    margin: 16px 0;
+    flex-wrap: wrap;
+  }
+
+  .gem-icon {
+    font-size: 24px;
+  }
+
+  .gem-count {
+    font-size: 28px;
+  }
+
+  .gem-label {
+    font-size: 12px;
+  }
+
+  .dashboard-header {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+}
+
+/* ============================================
+   Mobile Quiz View
+   ============================================ */
+
+@media (max-width: 600px) {
+  .view-quiz {
+    padding: 16px 12px;
+  }
+
+  .view-quiz h2 {
+    font-size: 18px;
+    margin: 12px 0;
+    line-height: 1.4;
+  }
+
+  .quiz-top {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .stats {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  .stats div {
+    padding: 6px 10px;
+  }
+
+  /* Sticky action buttons for easy thumb access */
+  .actions {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 12px;
+    margin: 12px -16px -16px;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    margin-top: 16px;
+    z-index: 10;
+    border-radius: 16px 16px 0 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  #nextBtn {
+    position: sticky;
+    bottom: 20px;
+    z-index: 10;
+    width: calc(100% - 32px);
+    max-width: 300px;
+    margin: 0 auto;
+    display: block;
+  }
+}
+
+/* ============================================
+   Mobile Module Select
+   ============================================ */
+
+@media (max-width: 600px) {
+  .view-module {
+    padding: 20px 14px;
+  }
+
+  .view-module h1 {
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+
+  .view-module button {
+    padding: 16px 18px;
+    font-size: 17px;
+    margin: 10px auto;
+  }
+
+  #numBtn, #readBtn, #convBtn, #writeBtn {
+    border-left-width: 6px;
+  }
+}
+
+/* ============================================
+   Mobile Results View
+   ============================================ */
+
+@media (max-width: 600px) {
+  .results-container {
+    padding: 16px;
+  }
+
+  .results-stats {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .stat-card {
+    padding: 16px;
+  }
+}
+
+/* ============================================
+   Mobile Settings View
+   ============================================ */
+
+@media (max-width: 600px) {
+  .settings-section {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+  }
+
+  .settings-section h2 {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .form-group {
+    margin-bottom: 14px;
+  }
+
+  .form-group label {
+    font-size: 14px;
+  }
+
+  .form-group input[type="text"] {
+    padding: 12px 14px;
+    font-size: 15px;
+  }
+
+  /* Larger toggle switches for touch */
+  .toggle {
+    width: 60px;
+    height: 32px;
+  }
+
+  .toggle-slider {
+    height: 28px;
+    width: 28px;
+  }
+}
+
+/* ============================================
+   Mobile Break Time View
+   ============================================ */
+
+@media (max-width: 600px) {
+  .view-break-time {
+    padding: 24px 16px;
+    text-align: center;
+  }
+
+  .break-message {
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+
+  .break-buttons {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .break-buttons button {
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+/* ============================================
+   Mobile Welcome View
+   ============================================ */
+
+@media (max-width: 600px) {
+  .view-welcome {
+    padding: 24px 16px;
+  }
+
+  .welcome-avatar-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .avatar-option {
+    font-size: 36px;
+    padding: 12px;
+  }
+
+  .color-picker {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .color-option {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* ============================================
+   Safe Area Insets (Notched Devices)
+   ============================================ */
+
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+
+  .actions {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+}
+
+/* ============================================
+   Landscape Mobile
+   ============================================ */
+
+@media (max-width: 600px) and (orientation: landscape) {
+  .view {
+    padding: 16px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
+
+  .mascot {
+    font-size: 48px;
+  }
+
+  .actions {
+    position: relative;
+    background: transparent;
+    box-shadow: none;
+    padding: 8px;
+    margin: 8px 0;
+    border-radius: 12px;
+  }
+}
+
+/* ============================================
+   Very Small Screens
+   ============================================ */
+
+@media (max-width: 360px) {
+  body {
+    padding: 8px;
+  }
+
+  .view {
+    padding: 16px 12px;
+    border-radius: 16px;
+  }
+
+  h1 {
+    font-size: 20px;
+  }
+
+  button {
+    padding: 12px 18px;
+    font-size: 15px;
+  }
+
+  .btn-start-mission {
+    font-size: 18px;
+    padding: 14px 24px;
+  }
+}
+
+/* ============================================
+   Print Styles (for testing)
+   ============================================ */
+
+@media print {
+  .actions,
+  .btn-primary,
+  .btn-secondary {
+    display: none;
+  }
+}

@@ -4,7 +4,7 @@ package-lock.json
 yarn.lock
 
 # Build outputs
-public/
+# public/  # Enable for Vercel deployment
 dist/
 
 # Testing
