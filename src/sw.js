@@ -1,7 +1,7 @@
 // NAPLAN Prep App - Service Worker
 // Enables offline functionality and faster loading
 
-const CACHE_NAME = 'naplan-prep-v1';
+const CACHE_NAME = 'naplan-prep-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
